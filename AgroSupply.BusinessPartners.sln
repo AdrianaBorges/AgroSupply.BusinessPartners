@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A9C30721-6878-4517-8915-C0C43B2E63FF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{4615FA36-1F18-45A7-9673-A233C6AB5748}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgroSupply.BusinessPartners.Domain", "src\AgroSupply.BusinessPartners.Domain\AgroSupply.BusinessPartners.Domain.csproj", "{85045CD4-2EF6-4846-BC88-93593CAE434C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgroSupply.BusinessPartners.Domain.Tests", "tests\AgroSupply.BusinessPartners.Domain.Tests\AgroSupply.BusinessPartners.Domain.Tests.csproj", "{EC752229-138E-4BC0-BBB8-2821B3151129}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{85045CD4-2EF6-4846-BC88-93593CAE434C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85045CD4-2EF6-4846-BC88-93593CAE434C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85045CD4-2EF6-4846-BC88-93593CAE434C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85045CD4-2EF6-4846-BC88-93593CAE434C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC752229-138E-4BC0-BBB8-2821B3151129}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC752229-138E-4BC0-BBB8-2821B3151129}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC752229-138E-4BC0-BBB8-2821B3151129}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC752229-138E-4BC0-BBB8-2821B3151129}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{85045CD4-2EF6-4846-BC88-93593CAE434C} = {A9C30721-6878-4517-8915-C0C43B2E63FF}
+		{EC752229-138E-4BC0-BBB8-2821B3151129} = {4615FA36-1F18-45A7-9673-A233C6AB5748}
+	EndGlobalSection
+EndGlobal
