@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgroSupply.BusinessPartners
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgroSupply.BusinessPartners.Domain.Tests", "tests\AgroSupply.BusinessPartners.Domain.Tests\AgroSupply.BusinessPartners.Domain.Tests.csproj", "{EC752229-138E-4BC0-BBB8-2821B3151129}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgroSupply.BusinessPartners.Application", "src\AgroSupply.BusinessPartners.Application\AgroSupply.BusinessPartners.Application.csproj", "{51F8DCB7-B74A-4863-A00D-6CA62033CE6D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgroSupply.BusinessPartners.Application.Tests", "tests\AgroSupply.BusinessPartners.Application.Tests\AgroSupply.BusinessPartners.Application.Tests.csproj", "{254BDFC5-4325-4197-9223-2ACAA401B01D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +29,14 @@ Global
 		{EC752229-138E-4BC0-BBB8-2821B3151129}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC752229-138E-4BC0-BBB8-2821B3151129}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC752229-138E-4BC0-BBB8-2821B3151129}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51F8DCB7-B74A-4863-A00D-6CA62033CE6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51F8DCB7-B74A-4863-A00D-6CA62033CE6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51F8DCB7-B74A-4863-A00D-6CA62033CE6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51F8DCB7-B74A-4863-A00D-6CA62033CE6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{254BDFC5-4325-4197-9223-2ACAA401B01D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{254BDFC5-4325-4197-9223-2ACAA401B01D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{254BDFC5-4325-4197-9223-2ACAA401B01D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{254BDFC5-4325-4197-9223-2ACAA401B01D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,5 +44,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{85045CD4-2EF6-4846-BC88-93593CAE434C} = {A9C30721-6878-4517-8915-C0C43B2E63FF}
 		{EC752229-138E-4BC0-BBB8-2821B3151129} = {4615FA36-1F18-45A7-9673-A233C6AB5748}
+		{51F8DCB7-B74A-4863-A00D-6CA62033CE6D} = {A9C30721-6878-4517-8915-C0C43B2E63FF}
+		{254BDFC5-4325-4197-9223-2ACAA401B01D} = {4615FA36-1F18-45A7-9673-A233C6AB5748}
 	EndGlobalSection
 EndGlobal
