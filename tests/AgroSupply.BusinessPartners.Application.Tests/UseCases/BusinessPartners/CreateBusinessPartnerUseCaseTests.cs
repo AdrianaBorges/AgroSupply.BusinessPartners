@@ -38,5 +38,13 @@ public class CreateBusinessPartnerUseCaseTests
 
             return Task.CompletedTask;
         }
+
+        public Task<BusinessPartner?> GetByIdAsync(Guid id)
+        {
+            return Task.FromResult(
+                BusinessPartner?.Id == id
+                    ? BusinessPartner
+                    : null);
+        }
     }
 }
