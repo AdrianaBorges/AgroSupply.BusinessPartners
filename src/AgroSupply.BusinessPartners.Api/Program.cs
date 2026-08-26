@@ -22,6 +22,8 @@ builder.Services.AddScoped<IBusinessPartnerRepository, BusinessPartnerRepository
 builder.Services.AddScoped<CreateBusinessPartnerUseCase>();
 builder.Services.AddScoped<GetBusinessPartnerByIdUseCase>();
 
+builder.Services.AddScoped<GetAllBusinessPartnersUseCase>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

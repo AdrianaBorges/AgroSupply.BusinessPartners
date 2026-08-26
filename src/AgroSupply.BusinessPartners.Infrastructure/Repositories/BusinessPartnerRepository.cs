@@ -25,4 +25,11 @@ public class BusinessPartnerRepository : IBusinessPartnerRepository
         return await _context.BusinessPartners
             .FirstOrDefaultAsync(x => x.Id == id);
     }
+
+    public async Task<IReadOnlyCollection<BusinessPartner>> GetAllAsync()
+    {
+        return await _context.BusinessPartners
+            .AsNoTracking()
+            .ToListAsync();
+    }
 }

@@ -6,4 +6,6 @@ public interface IBusinessPartnerRepository
 {
     Task AddAsync(BusinessPartner businessPartner);
     Task<BusinessPartner?> GetByIdAsync(Guid id);
+    Task<IReadOnlyCollection<BusinessPartner>> GetAllAsync();
+
 }

@@ -10,13 +10,16 @@ public class BusinessPartnersController : ControllerBase
 {
     private readonly CreateBusinessPartnerUseCase _createBusinessPartnerUseCase;
     private readonly GetBusinessPartnerByIdUseCase _getBusinessPartnerByIdUseCase;
+    private readonly GetAllBusinessPartnersUseCase _getAllBusinessPartnersUseCase;
 
     public BusinessPartnersController(
-    CreateBusinessPartnerUseCase createBusinessPartnerUseCase,
-    GetBusinessPartnerByIdUseCase getBusinessPartnerByIdUseCase)
+     CreateBusinessPartnerUseCase createBusinessPartnerUseCase,
+     GetBusinessPartnerByIdUseCase getBusinessPartnerByIdUseCase,
+     GetAllBusinessPartnersUseCase getAllBusinessPartnersUseCase)
     {
         _createBusinessPartnerUseCase = createBusinessPartnerUseCase;
         _getBusinessPartnerByIdUseCase = getBusinessPartnerByIdUseCase;
+        _getAllBusinessPartnersUseCase = getAllBusinessPartnersUseCase;
     }
 
     [HttpPost]
@@ -44,6 +47,15 @@ public class BusinessPartnersController : ControllerBase
             return NotFound();
 
         return Ok(businessPartner);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var businessPartners =
+            await _getAllBusinessPartnersUseCase.ExecuteAsync();
+
+        return Ok(businessPartners);
     }
 
 }

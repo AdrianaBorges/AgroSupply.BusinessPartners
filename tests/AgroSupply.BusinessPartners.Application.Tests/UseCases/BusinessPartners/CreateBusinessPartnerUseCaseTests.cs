@@ -39,6 +39,16 @@ public class CreateBusinessPartnerUseCaseTests
             return Task.CompletedTask;
         }
 
+        public Task<IReadOnlyCollection<BusinessPartner>> GetAllAsync()
+        {
+            IReadOnlyCollection<BusinessPartner> businessPartners =
+                BusinessPartner is null
+                    ? Array.Empty<BusinessPartner>()
+                    : new[] { BusinessPartner };
+
+            return Task.FromResult(businessPartners);
+        }
+
         public Task<BusinessPartner?> GetByIdAsync(Guid id)
         {
             return Task.FromResult(

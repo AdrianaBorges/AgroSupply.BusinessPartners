@@ -83,5 +83,17 @@ public class BusinessPartnersControllerTests
 
         Assert.True(
             businessPartner.GetProperty("isActive").GetBoolean());
+
+    }
+
+    [Fact]
+    public async Task GetAll_ShouldReturnOk()
+    {
+        // Act
+        var response = await _client.GetAsync(
+            "/api/BusinessPartners");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }
