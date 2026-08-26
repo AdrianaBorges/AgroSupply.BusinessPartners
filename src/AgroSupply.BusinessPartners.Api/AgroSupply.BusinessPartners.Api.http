@@ -1,0 +1,6 @@
+@AgroSupply.BusinessPartners.Api_HostAddress = http://localhost:5039
+
+GET {{AgroSupply.BusinessPartners.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
