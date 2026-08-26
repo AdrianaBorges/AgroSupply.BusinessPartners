@@ -146,4 +146,57 @@ public class BusinessPartnerTests
         // Assert
         Assert.Equal("cpf", exception.ParamName);
     }
+
+    [Fact]
+    public void Constructor_ShouldCreateActiveBusinessPartnerWithoutDeactivationDate()
+    {
+        // Arrange
+        const string name = "Agro Forte Ltda";
+        const string cpf = "12345678901";
+        var birthDate = new DateTime(1990, 5, 15);
+
+        // Act
+        var businessPartner = new BusinessPartner(name, cpf, birthDate);
+
+        // Assert
+        Assert.True(businessPartner.IsActive);
+        Assert.Null(businessPartner.DeactivatedAt);
+    }
+
+    [Fact]
+    public void Deactivate_ShouldSetBusinessPartnerAsInactiveAndSetDeactivatedAt()
+    {
+        // Arrange
+        var businessPartner = new BusinessPartner(
+            "Agro Forte Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
+
+        // Act
+        businessPartner.Deactivate();
+
+        // Assert
+        Assert.False(businessPartner.IsActive);
+        Assert.NotNull(businessPartner.DeactivatedAt);
+    }
+
+    [Fact]
+    public void Deactivate_ShouldKeepOriginalDeactivatedAt_WhenAlreadyInactive()
+    {
+        // Arrange
+        var businessPartner = new BusinessPartner(
+            "Agro Forte Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
+
+        businessPartner.Deactivate();
+
+        var firstDeactivatedAt = businessPartner.DeactivatedAt;
+
+        // Act
+        businessPartner.Deactivate();
+
+        // Assert
+        Assert.Equal(firstDeactivatedAt, businessPartner.DeactivatedAt);
+    }
 }

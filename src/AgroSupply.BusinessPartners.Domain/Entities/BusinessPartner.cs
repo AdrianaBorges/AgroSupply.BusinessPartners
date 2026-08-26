@@ -24,6 +24,8 @@ public class BusinessPartner
 
     public bool IsActive { get; private set; }
 
+    public DateTime? DeactivatedAt { get; private set; }
+
     public void Update(string name, string cpf, DateTime birthDate)
     {
         ValidateName(name);
@@ -48,5 +50,14 @@ public class BusinessPartner
             throw new ArgumentException(
                 "O CPF é obrigatório.",
                 nameof(cpf));
+    }
+
+    public void Deactivate()
+    {
+        if (!IsActive)
+            return;
+
+        IsActive = false;
+        DeactivatedAt = DateTime.UtcNow;
     }
 }
