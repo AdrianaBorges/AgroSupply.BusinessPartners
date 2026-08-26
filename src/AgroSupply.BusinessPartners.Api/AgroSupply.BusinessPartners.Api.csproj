@@ -19,10 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\AgroSupply.BusinessPartners.Application\AgroSupply.BusinessPartners.Application.csproj" />
     <ProjectReference Include="..\AgroSupply.BusinessPartners.Infrastructure\AgroSupply.BusinessPartners.Infrastructure.csproj" />
   </ItemGroup>
