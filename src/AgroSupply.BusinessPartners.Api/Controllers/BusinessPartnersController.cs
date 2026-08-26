@@ -12,17 +12,20 @@ public class BusinessPartnersController : ControllerBase
     private readonly GetBusinessPartnerByIdUseCase _getBusinessPartnerByIdUseCase;
     private readonly GetAllBusinessPartnersUseCase _getAllBusinessPartnersUseCase;
     private readonly UpdateBusinessPartnerUseCase _updateBusinessPartnerUseCase;
+    private readonly DeactivateBusinessPartnerUseCase _deactivateBusinessPartnerUseCase;
 
     public BusinessPartnersController(
         CreateBusinessPartnerUseCase createBusinessPartnerUseCase,
         GetBusinessPartnerByIdUseCase getBusinessPartnerByIdUseCase,
         GetAllBusinessPartnersUseCase getAllBusinessPartnersUseCase,
-        UpdateBusinessPartnerUseCase updateBusinessPartnerUseCase)
+        UpdateBusinessPartnerUseCase updateBusinessPartnerUseCase,
+        DeactivateBusinessPartnerUseCase deactivateBusinessPartnerUseCase)
     {
         _createBusinessPartnerUseCase = createBusinessPartnerUseCase;
         _getBusinessPartnerByIdUseCase = getBusinessPartnerByIdUseCase;
         _getAllBusinessPartnersUseCase = getAllBusinessPartnersUseCase;
         _updateBusinessPartnerUseCase = updateBusinessPartnerUseCase;
+        _deactivateBusinessPartnerUseCase = deactivateBusinessPartnerUseCase;
     }
 
     [HttpPost]
@@ -77,5 +80,17 @@ public class BusinessPartnersController : ControllerBase
             return NotFound();
 
         return Ok(businessPartner);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var businessPartner =
+            await _deactivateBusinessPartnerUseCase.ExecuteAsync(id);
+
+        if (businessPartner is null)
+            return NotFound();
+
+        return NoContent();
     }
 }

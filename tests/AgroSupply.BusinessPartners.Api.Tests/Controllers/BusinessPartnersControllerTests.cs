@@ -182,4 +182,66 @@ public class BusinessPartnersControllerTests
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Delete_ShouldReturnNoContent_WhenBusinessPartnerExists()
+    {
+        // Arrange - Create
+        var createRequest = new
+        {
+            name = "Parceiro para Inativacao Ltda",
+            cpf = "74185296300",
+            birthDate = new DateTime(1992, 4, 12)
+        };
+
+        var createResponse = await _client.PostAsJsonAsync(
+            "/api/BusinessPartners",
+            createRequest);
+
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        var createContent = await createResponse.Content.ReadAsStringAsync();
+
+        using var document = JsonDocument.Parse(createContent);
+
+        var id = document.RootElement
+            .GetProperty("id")
+            .GetGuid();
+
+        // Act
+        var deleteResponse = await _client.DeleteAsync(
+            $"/api/BusinessPartners/{id}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+
+        var getResponse = await _client.GetAsync(
+            $"/api/BusinessPartners/{id}");
+
+        Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+
+        var businessPartner =
+            await getResponse.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.False(
+            businessPartner.GetProperty("isActive").GetBoolean());
+
+        Assert.NotEqual(
+            JsonValueKind.Null,
+            businessPartner.GetProperty("deactivatedAt").ValueKind);
+    }
+
+    [Fact]
+    public async Task Delete_ShouldReturnNotFound_WhenBusinessPartnerDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+
+        // Act
+        var response = await _client.DeleteAsync(
+            $"/api/BusinessPartners/{id}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 }
