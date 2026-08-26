@@ -4,52 +4,64 @@ using AgroSupply.BusinessPartners.Domain.Entities;
 
 namespace AgroSupply.BusinessPartners.Application.Tests.UseCases.BusinessPartners;
 
-public class GetBusinessPartnerByIdUseCaseTests
+public class UpdateBusinessPartnerUseCaseTests
 {
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnBusinessPartner_WhenIdExists()
+    public async Task ExecuteAsync_ShouldUpdateBusinessPartner_WhenIdExists()
     {
         // Arrange
-        const string name = "João da Silva";
-        const string cpf = "12345678901";
-        var birthDate = new DateTime(1990, 5, 15);
+        var businessPartner = new BusinessPartner(
+            "Agro Forte Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
 
-        var businessPartner = new BusinessPartner(name, cpf, birthDate);
         var repository = new FakeBusinessPartnerRepository(businessPartner);
-        var useCase = new GetBusinessPartnerByIdUseCase(repository);
+        var useCase = new UpdateBusinessPartnerUseCase(repository);
+
+        const string newName = "Agro Forte Distribuidora Ltda";
+        const string newCpf = "98765432100";
+        var newBirthDate = new DateTime(1985, 10, 20);
 
         // Act
-        var result = await useCase.ExecuteAsync(businessPartner.Id);
+        var result = await useCase.ExecuteAsync(
+            businessPartner.Id,
+            newName,
+            newCpf,
+            newBirthDate);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(businessPartner.Id, result.Id);
-        Assert.Equal(name, result.Name);
-        Assert.Equal(cpf, result.Cpf);
+        Assert.Equal(newName, result.Name);
+        Assert.Equal(newCpf, result.Cpf);
+        Assert.Equal(newBirthDate, result.BirthDate);
     }
 
-    private sealed class FakeBusinessPartnerRepository : IBusinessPartnerRepository
+    private sealed class FakeBusinessPartnerRepository
+        : IBusinessPartnerRepository
     {
-        private readonly BusinessPartner? _businessPartner;
+        private BusinessPartner? _businessPartner;
 
-        public FakeBusinessPartnerRepository(BusinessPartner? businessPartner)
+        public FakeBusinessPartnerRepository(
+            BusinessPartner? businessPartner)
         {
             _businessPartner = businessPartner;
         }
 
         public Task AddAsync(BusinessPartner businessPartner)
         {
+            _businessPartner = businessPartner;
+
             return Task.CompletedTask;
         }
 
         public Task<IReadOnlyCollection<BusinessPartner>> GetAllAsync()
         {
-            IReadOnlyCollection<BusinessPartner> businessPartners =
+            IReadOnlyCollection<BusinessPartner> result =
                 _businessPartner is null
                     ? Array.Empty<BusinessPartner>()
                     : new[] { _businessPartner };
 
-            return Task.FromResult(businessPartners);
+            return Task.FromResult(result);
         }
 
         public Task<BusinessPartner?> GetByIdAsync(Guid id)
@@ -62,6 +74,8 @@ public class GetBusinessPartnerByIdUseCaseTests
 
         public Task UpdateAsync(BusinessPartner businessPartner)
         {
+            _businessPartner = businessPartner;
+
             return Task.CompletedTask;
         }
 
@@ -72,11 +86,16 @@ public class GetBusinessPartnerByIdUseCaseTests
     {
         // Arrange
         var repository = new FakeBusinessPartnerRepository(null);
-        var useCase = new GetBusinessPartnerByIdUseCase(repository);
+        var useCase = new UpdateBusinessPartnerUseCase(repository);
+
         var id = Guid.NewGuid();
 
         // Act
-        var result = await useCase.ExecuteAsync(id);
+        var result = await useCase.ExecuteAsync(
+            id,
+            "Agro Forte Distribuidora Ltda",
+            "98765432100",
+            new DateTime(1985, 10, 20));
 
         // Assert
         Assert.Null(result);

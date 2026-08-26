@@ -60,5 +60,16 @@ public class GetAllBusinessPartnersUseCaseTests
             return Task.FromResult(
                 _businessPartners.FirstOrDefault(x => x.Id == id));
         }
+
+        public Task UpdateAsync(BusinessPartner businessPartner)
+        {
+            var index = _businessPartners.FindIndex(
+                x => x.Id == businessPartner.Id);
+
+            if (index >= 0)
+                _businessPartners[index] = businessPartner;
+
+            return Task.CompletedTask;
+        }
     }
 }

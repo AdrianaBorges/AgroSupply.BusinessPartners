@@ -96,4 +96,90 @@ public class BusinessPartnersControllerTests
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Update_ShouldReturnOk_WhenBusinessPartnerExists()
+    {
+        // Arrange - Create
+        var createRequest = new
+        {
+            name = "Agro Update Ltda",
+            cpf = "12345678901",
+            birthDate = new DateTime(1990, 5, 15)
+        };
+
+        var createResponse = await _client.PostAsJsonAsync(
+            "/api/BusinessPartners",
+            createRequest);
+
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        var createContent = await createResponse.Content.ReadAsStringAsync();
+
+        using var document = JsonDocument.Parse(createContent);
+
+        var id = document.RootElement
+            .GetProperty("id")
+            .GetGuid();
+
+        // Arrange - Update
+        var updateRequest = new
+        {
+            name = "Agro Update Distribuidora Ltda",
+            cpf = "98765432100",
+            birthDate = new DateTime(1985, 10, 20)
+        };
+
+        // Act
+        var updateResponse = await _client.PutAsJsonAsync(
+            $"/api/BusinessPartners/{id}",
+            updateRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+
+        var businessPartner =
+            await updateResponse.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.Equal(
+            id,
+            businessPartner.GetProperty("id").GetGuid());
+
+        Assert.Equal(
+            updateRequest.name,
+            businessPartner.GetProperty("name").GetString());
+
+        Assert.Equal(
+            updateRequest.cpf,
+            businessPartner.GetProperty("cpf").GetString());
+
+        Assert.Equal(
+            updateRequest.birthDate,
+            businessPartner.GetProperty("birthDate").GetDateTime());
+
+        Assert.True(
+            businessPartner.GetProperty("isActive").GetBoolean());
+    }
+
+    [Fact]
+    public async Task Update_ShouldReturnNotFound_WhenBusinessPartnerDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+
+        var request = new
+        {
+            name = "Agro Inexistente Ltda",
+            cpf = "12345678901",
+            birthDate = new DateTime(1990, 5, 15)
+        };
+
+        // Act
+        var response = await _client.PutAsJsonAsync(
+            $"/api/BusinessPartners/{id}",
+            request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 }

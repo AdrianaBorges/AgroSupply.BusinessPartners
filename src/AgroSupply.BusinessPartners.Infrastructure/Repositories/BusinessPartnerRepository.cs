@@ -32,4 +32,10 @@ public class BusinessPartnerRepository : IBusinessPartnerRepository
             .AsNoTracking()
             .ToListAsync();
     }
+
+    public async Task UpdateAsync(BusinessPartner businessPartner)
+    {
+        _context.BusinessPartners.Update(businessPartner);
+        await _context.SaveChangesAsync();
+    }
 }

@@ -56,5 +56,12 @@ public class CreateBusinessPartnerUseCaseTests
                     ? BusinessPartner
                     : null);
         }
+
+        public Task UpdateAsync(BusinessPartner businessPartner)
+        {
+            BusinessPartner = businessPartner;
+
+            return Task.CompletedTask;
+        }
     }
 }

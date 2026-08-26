@@ -81,4 +81,69 @@ public class BusinessPartnerTests
         Assert.Equal(birthDate, businessPartner.BirthDate);
         Assert.True(businessPartner.IsActive);
     }
+
+    [Fact]
+    public void Update_ShouldChangeBusinessPartnerData_WhenDataIsValid()
+    {
+        // Arrange
+        var businessPartner = new BusinessPartner(
+            "Agro Forte Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
+
+        const string newName = "Agro Forte Distribuidora Ltda";
+        const string newCpf = "98765432100";
+        var newBirthDate = new DateTime(1985, 10, 20);
+
+        // Act
+        businessPartner.Update(
+            newName,
+            newCpf,
+            newBirthDate);
+
+        // Assert
+        Assert.Equal(newName, businessPartner.Name);
+        Assert.Equal(newCpf, businessPartner.Cpf);
+        Assert.Equal(newBirthDate, businessPartner.BirthDate);
+    }
+
+    [Fact]
+    public void Update_ShouldThrowArgumentException_WhenNameIsEmpty()
+    {
+        // Arrange
+        var businessPartner = new BusinessPartner(
+            "Agro Forte Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
+
+        // Act
+        var exception = Assert.Throws<ArgumentException>(() =>
+            businessPartner.Update(
+                "",
+                "98765432100",
+                new DateTime(1985, 10, 20)));
+
+        // Assert
+        Assert.Equal("name", exception.ParamName);
+    }
+
+    [Fact]
+    public void Update_ShouldThrowArgumentException_WhenCpfIsEmpty()
+    {
+        // Arrange
+        var businessPartner = new BusinessPartner(
+            "Agro Forte Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
+
+        // Act
+        var exception = Assert.Throws<ArgumentException>(() =>
+            businessPartner.Update(
+                "Agro Forte Distribuidora Ltda",
+                "",
+                new DateTime(1985, 10, 20)));
+
+        // Assert
+        Assert.Equal("cpf", exception.ParamName);
+    }
 }

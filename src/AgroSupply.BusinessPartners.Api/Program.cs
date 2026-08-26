@@ -23,6 +23,7 @@ builder.Services.AddScoped<CreateBusinessPartnerUseCase>();
 builder.Services.AddScoped<GetBusinessPartnerByIdUseCase>();
 
 builder.Services.AddScoped<GetAllBusinessPartnersUseCase>();
+builder.Services.AddScoped<UpdateBusinessPartnerUseCase>();
 
 var app = builder.Build();
 

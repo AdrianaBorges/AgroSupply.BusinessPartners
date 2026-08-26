@@ -11,20 +11,23 @@ public class BusinessPartnersController : ControllerBase
     private readonly CreateBusinessPartnerUseCase _createBusinessPartnerUseCase;
     private readonly GetBusinessPartnerByIdUseCase _getBusinessPartnerByIdUseCase;
     private readonly GetAllBusinessPartnersUseCase _getAllBusinessPartnersUseCase;
+    private readonly UpdateBusinessPartnerUseCase _updateBusinessPartnerUseCase;
 
     public BusinessPartnersController(
-     CreateBusinessPartnerUseCase createBusinessPartnerUseCase,
-     GetBusinessPartnerByIdUseCase getBusinessPartnerByIdUseCase,
-     GetAllBusinessPartnersUseCase getAllBusinessPartnersUseCase)
+        CreateBusinessPartnerUseCase createBusinessPartnerUseCase,
+        GetBusinessPartnerByIdUseCase getBusinessPartnerByIdUseCase,
+        GetAllBusinessPartnersUseCase getAllBusinessPartnersUseCase,
+        UpdateBusinessPartnerUseCase updateBusinessPartnerUseCase)
     {
         _createBusinessPartnerUseCase = createBusinessPartnerUseCase;
         _getBusinessPartnerByIdUseCase = getBusinessPartnerByIdUseCase;
         _getAllBusinessPartnersUseCase = getAllBusinessPartnersUseCase;
+        _updateBusinessPartnerUseCase = updateBusinessPartnerUseCase;
     }
 
     [HttpPost]
     public async Task<IActionResult> Create(
-    CreateBusinessPartnerRequest request)
+        CreateBusinessPartnerRequest request)
     {
         var businessPartner = await _createBusinessPartnerUseCase.ExecuteAsync(
             request.Name,
@@ -58,6 +61,21 @@ public class BusinessPartnersController : ControllerBase
         return Ok(businessPartners);
     }
 
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(
+        Guid id,
+        UpdateBusinessPartnerRequest request)
+    {
+        var businessPartner =
+            await _updateBusinessPartnerUseCase.ExecuteAsync(
+                id,
+                request.Name,
+                request.Cpf,
+                request.BirthDate);
+
+        if (businessPartner is null)
+            return NotFound();
+
+        return Ok(businessPartner);
+    }
 }
-
-
