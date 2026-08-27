@@ -13,6 +13,8 @@ public class BusinessPartnersDbContext : DbContext
 
     public DbSet<BusinessPartner> BusinessPartners { get; set; }
 
+    public DbSet<PhoneNumber> PhoneNumbers { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(

@@ -25,5 +25,15 @@ public class BusinessPartnerConfiguration : IEntityTypeConfiguration<BusinessPar
 
         builder.Property(x => x.IsActive)
             .IsRequired();
+
+        builder.Property(x => x.DeactivatedAt)
+            .IsRequired(false);
+
+        builder.HasMany(x => x.PhoneNumbers)
+           .WithOne()
+           .HasForeignKey("BusinessPartnerId")
+           .IsRequired()
+           .OnDelete(DeleteBehavior.Restrict);
+
     }
 }

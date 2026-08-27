@@ -1,4 +1,5 @@
 ﻿using AgroSupply.BusinessPartners.Domain.Entities;
+using AgroSupply.BusinessPartners.Domain.Enums;
 
 namespace AgroSupply.BusinessPartners.Domain.Tests.Entities;
 
@@ -198,5 +199,73 @@ public class BusinessPartnerTests
 
         // Assert
         Assert.Equal(firstDeactivatedAt, businessPartner.DeactivatedAt);
+    }
+
+    [Fact]
+    public void Constructor_ShouldCreateBusinessPartnerWithoutPhoneNumbers()
+    {
+        // Arrange & Act
+        var businessPartner = new BusinessPartner(
+            "Agro Forte Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
+
+        // Assert
+        Assert.Empty(businessPartner.PhoneNumbers);
+    }
+
+    [Fact]
+    public void AddPhoneNumber_ShouldAddPhoneNumberToBusinessPartner()
+    {
+        // Arrange
+        var businessPartner = new BusinessPartner(
+            "Agro Forte Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
+
+        // Act
+        businessPartner.AddPhoneNumber(
+            PhoneNumberType.Mobile,
+            "21999999999");
+
+        // Assert
+        Assert.Single(businessPartner.PhoneNumbers);
+
+        var phoneNumber = businessPartner.PhoneNumbers.Single();
+
+        Assert.Equal(PhoneNumberType.Mobile, phoneNumber.Type);
+        Assert.Equal("21999999999", phoneNumber.Number);
+    }
+
+    [Fact]
+    public void AddPhoneNumber_ShouldAllowMultiplePhoneNumbers()
+    {
+        // Arrange
+        var businessPartner = new BusinessPartner(
+            "Agro Forte Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
+
+        // Act
+        businessPartner.AddPhoneNumber(
+            PhoneNumberType.Mobile,
+            "21999999999");
+
+        businessPartner.AddPhoneNumber(
+            PhoneNumberType.Commercial,
+            "2133334444");
+
+        // Assert
+        Assert.Equal(2, businessPartner.PhoneNumbers.Count);
+
+        Assert.Contains(
+            businessPartner.PhoneNumbers,
+            phone => phone.Type == PhoneNumberType.Mobile &&
+                     phone.Number == "21999999999");
+
+        Assert.Contains(
+            businessPartner.PhoneNumbers,
+            phone => phone.Type == PhoneNumberType.Commercial &&
+                     phone.Number == "2133334444");
     }
 }

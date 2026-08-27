@@ -1,7 +1,11 @@
-﻿namespace AgroSupply.BusinessPartners.Domain.Entities;
+﻿using AgroSupply.BusinessPartners.Domain.Enums;
+
+namespace AgroSupply.BusinessPartners.Domain.Entities;
 
 public class BusinessPartner
 {
+    private readonly List<PhoneNumber> _phoneNumbers = new();
+
     public BusinessPartner(string name, string cpf, DateTime birthDate)
     {
         ValidateName(name);
@@ -26,6 +30,9 @@ public class BusinessPartner
 
     public DateTime? DeactivatedAt { get; private set; }
 
+    public IReadOnlyCollection<PhoneNumber> PhoneNumbers =>
+        _phoneNumbers.AsReadOnly();
+
     public void Update(string name, string cpf, DateTime birthDate)
     {
         ValidateName(name);
@@ -34,6 +41,24 @@ public class BusinessPartner
         Name = name;
         Cpf = cpf;
         BirthDate = birthDate;
+    }
+
+    public void AddPhoneNumber(
+        PhoneNumberType type,
+        string number)
+    {
+        var phoneNumber = new PhoneNumber(type, number);
+
+        _phoneNumbers.Add(phoneNumber);
+    }
+
+    public void Deactivate()
+    {
+        if (!IsActive)
+            return;
+
+        IsActive = false;
+        DeactivatedAt = DateTime.UtcNow;
     }
 
     private static void ValidateName(string name)
@@ -50,14 +75,5 @@ public class BusinessPartner
             throw new ArgumentException(
                 "O CPF é obrigatório.",
                 nameof(cpf));
-    }
-
-    public void Deactivate()
-    {
-        if (!IsActive)
-            return;
-
-        IsActive = false;
-        DeactivatedAt = DateTime.UtcNow;
     }
 }
