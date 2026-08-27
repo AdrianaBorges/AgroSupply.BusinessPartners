@@ -13,19 +13,22 @@ public class BusinessPartnersController : ControllerBase
     private readonly GetAllBusinessPartnersUseCase _getAllBusinessPartnersUseCase;
     private readonly UpdateBusinessPartnerUseCase _updateBusinessPartnerUseCase;
     private readonly DeactivateBusinessPartnerUseCase _deactivateBusinessPartnerUseCase;
+    private readonly AddPhoneNumberToBusinessPartnerUseCase _addPhoneNumberToBusinessPartnerUseCase;
 
     public BusinessPartnersController(
         CreateBusinessPartnerUseCase createBusinessPartnerUseCase,
         GetBusinessPartnerByIdUseCase getBusinessPartnerByIdUseCase,
         GetAllBusinessPartnersUseCase getAllBusinessPartnersUseCase,
         UpdateBusinessPartnerUseCase updateBusinessPartnerUseCase,
-        DeactivateBusinessPartnerUseCase deactivateBusinessPartnerUseCase)
+        DeactivateBusinessPartnerUseCase deactivateBusinessPartnerUseCase,
+        AddPhoneNumberToBusinessPartnerUseCase addPhoneNumberToBusinessPartnerUseCase)
     {
         _createBusinessPartnerUseCase = createBusinessPartnerUseCase;
         _getBusinessPartnerByIdUseCase = getBusinessPartnerByIdUseCase;
         _getAllBusinessPartnersUseCase = getAllBusinessPartnersUseCase;
         _updateBusinessPartnerUseCase = updateBusinessPartnerUseCase;
         _deactivateBusinessPartnerUseCase = deactivateBusinessPartnerUseCase;
+        _addPhoneNumberToBusinessPartnerUseCase = addPhoneNumberToBusinessPartnerUseCase;
     }
 
     [HttpPost]
@@ -94,5 +97,24 @@ public class BusinessPartnersController : ControllerBase
             return NotFound();
 
         return NoContent();
+    }
+
+    [HttpPost("{id:guid}/phone-numbers")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddPhoneNumber(
+        Guid id,
+        AddPhoneNumberRequest request)
+    {
+        var businessPartner =
+            await _addPhoneNumberToBusinessPartnerUseCase.ExecuteAsync(
+                id,
+                request.Type,
+                request.Number);
+
+        if (businessPartner is null)
+            return NotFound();
+
+        return Ok(businessPartner);
     }
 }

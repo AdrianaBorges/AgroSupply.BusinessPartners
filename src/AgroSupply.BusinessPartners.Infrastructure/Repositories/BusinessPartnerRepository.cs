@@ -23,6 +23,7 @@ public class BusinessPartnerRepository : IBusinessPartnerRepository
     public async Task<BusinessPartner?> GetByIdAsync(Guid id)
     {
         return await _context.BusinessPartners
+            .Include(x => x.PhoneNumbers)
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
@@ -30,12 +31,20 @@ public class BusinessPartnerRepository : IBusinessPartnerRepository
     {
         return await _context.BusinessPartners
             .AsNoTracking()
+            .Include(x => x.PhoneNumbers)
             .ToListAsync();
     }
 
     public async Task UpdateAsync(BusinessPartner businessPartner)
     {
-        _context.BusinessPartners.Update(businessPartner);
+        foreach (var phoneNumber in businessPartner.PhoneNumbers)
+        {
+            var entry = _context.Entry(phoneNumber);
+
+            if (entry.State == EntityState.Detached)
+                entry.State = EntityState.Added;
+        }
+
         await _context.SaveChangesAsync();
     }
 }

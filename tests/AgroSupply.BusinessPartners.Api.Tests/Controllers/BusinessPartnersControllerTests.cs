@@ -244,4 +244,84 @@ public class BusinessPartnersControllerTests
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+
+    [Fact]
+    public async Task AddPhoneNumber_ShouldReturnOk_WhenBusinessPartnerExists()
+    {
+        // Arrange - Create Business Partner
+        var createRequest = new
+        {
+            name = "Agro Telefones Ltda",
+            cpf = "85274196300",
+            birthDate = new DateTime(1991, 6, 20)
+        };
+
+        var createResponse = await _client.PostAsJsonAsync(
+            "/api/BusinessPartners",
+            createRequest);
+
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        var createContent = await createResponse.Content.ReadAsStringAsync();
+
+        using var document = JsonDocument.Parse(createContent);
+
+        var id = document.RootElement
+            .GetProperty("id")
+            .GetGuid();
+
+        var phoneRequest = new
+        {
+            type = 1,
+            number = "21999999999"
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(
+            $"/api/BusinessPartners/{id}/phone-numbers",
+            phoneRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var businessPartner =
+            await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        var phoneNumbers =
+            businessPartner.GetProperty("phoneNumbers");
+
+        Assert.Equal(1, phoneNumbers.GetArrayLength());
+
+        var phoneNumber = phoneNumbers[0];
+
+        Assert.Equal(
+            phoneRequest.type,
+            phoneNumber.GetProperty("type").GetInt32());
+
+        Assert.Equal(
+            phoneRequest.number,
+            phoneNumber.GetProperty("number").GetString());
+    }
+
+    [Fact]
+    public async Task AddPhoneNumber_ShouldReturnNotFound_WhenBusinessPartnerDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+
+        var request = new
+        {
+            type = 1,
+            number = "21999999999"
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(
+            $"/api/BusinessPartners/{id}/phone-numbers",
+            request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 }

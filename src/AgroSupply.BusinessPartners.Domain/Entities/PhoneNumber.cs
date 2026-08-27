@@ -4,6 +4,10 @@ namespace AgroSupply.BusinessPartners.Domain.Entities;
 
 public class PhoneNumber
 {
+    private PhoneNumber()
+    {
+    }
+
     public PhoneNumber(
         PhoneNumberType type,
         string number)
@@ -18,9 +22,9 @@ public class PhoneNumber
         Number = number;
     }
 
-    public Guid Id { get; }
+    public Guid Id { get; private set; }
 
-    public PhoneNumberType Type { get; }
+    public PhoneNumberType Type { get; private set; }
 
-    public string Number { get; }
+    public string Number { get; private set; } = string.Empty;
 }

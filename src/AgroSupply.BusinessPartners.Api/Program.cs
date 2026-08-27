@@ -21,11 +21,10 @@ builder.Services.AddScoped<IBusinessPartnerRepository, BusinessPartnerRepository
 
 builder.Services.AddScoped<CreateBusinessPartnerUseCase>();
 builder.Services.AddScoped<GetBusinessPartnerByIdUseCase>();
-
 builder.Services.AddScoped<GetAllBusinessPartnersUseCase>();
 builder.Services.AddScoped<UpdateBusinessPartnerUseCase>();
-
 builder.Services.AddScoped<DeactivateBusinessPartnerUseCase>();
+builder.Services.AddScoped<AddPhoneNumberToBusinessPartnerUseCase>();
 
 var app = builder.Build();
 
