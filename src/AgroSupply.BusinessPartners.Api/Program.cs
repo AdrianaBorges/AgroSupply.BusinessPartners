@@ -1,5 +1,6 @@
 using AgroSupply.BusinessPartners.Application.Abstractions;
 using AgroSupply.BusinessPartners.Application.UseCases.BusinessPartners;
+using AgroSupply.BusinessPartners.Application.UseCases.BusinessRelationships;
 using AgroSupply.BusinessPartners.Infrastructure.Persistence;
 using AgroSupply.BusinessPartners.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +36,12 @@ builder.Services.AddScoped<AddPhoneNumberToBusinessPartnerUseCase>();
 builder.Services.AddScoped<GetPhoneNumberFromBusinessPartnerUseCase>();
 builder.Services.AddScoped<UpdatePhoneNumberFromBusinessPartnerUseCase>();
 builder.Services.AddScoped<RemovePhoneNumberFromBusinessPartnerUseCase>();
+builder.Services.AddScoped<CreateBusinessRelationshipUseCase>();
+builder.Services.AddScoped<DeactivateBusinessRelationshipUseCase>();
+
+builder.Services.AddScoped<
+    IBusinessRelationshipRepository,
+    BusinessRelationshipRepository>();
 
 var app = builder.Build();
 

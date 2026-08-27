@@ -22,4 +22,6 @@ public class BusinessPartnersDbContext : DbContext
 
         base.OnModelCreating(modelBuilder);
     }
+
+    public DbSet<BusinessRelationship> BusinessRelationships { get; set; }
 }
