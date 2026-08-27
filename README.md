@@ -16,14 +16,18 @@ A API disponibiliza atualmente:
 - atualização cadastral;
 - inativação lógica;
 - associação de múltiplos números de telefone;
-- recuperação dos telefones associados ao Business Partner.
+- consulta individual de telefone;
+- atualização de telefone;
+- remoção de telefone.
 
-A inativação preserva o registro para fins de rastreabilidade através de:
+A inativação do `BusinessPartner` preserva o registro para fins de rastreabilidade através de:
 
 ```text
 IsActive = false
 DeactivatedAt = data/hora da inativação
 ```
+
+Já a remoção de `PhoneNumber` representa uma exclusão física da entidade dependente pertencente ao agregado.
 
 ---
 
@@ -81,7 +85,7 @@ A arquitetura utiliza princípios de Clean Architecture e DDD de forma pragmáti
 
 ## Modelo de Domínio
 
-`BusinessPartner` representa a entidade principal do domínio.
+`BusinessPartner` representa a entidade principal do domínio e funciona como principal ponto de controle do agregado.
 
 Um Business Partner pode possuir vários números de telefone:
 
@@ -89,7 +93,16 @@ Um Business Partner pode possuir vários números de telefone:
 BusinessPartner 1 ───────── N PhoneNumber
 ```
 
-A associação é realizada através do comportamento do próprio Business Partner, mantendo o controle da operação no domínio.
+As operações relacionadas aos telefones são realizadas através do próprio `BusinessPartner`, preservando o encapsulamento da coleção.
+
+Entre os comportamentos disponíveis estão:
+
+```text
+AddPhoneNumber(...)
+GetPhoneNumber(...)
+UpdatePhoneNumber(...)
+RemovePhoneNumber(...)
+```
 
 Os telefones são classificados através de:
 
@@ -98,8 +111,8 @@ Os telefones são classificados através de:
 com os tipos:
 
 - `Mobile`;
-- `Landline`;
-- `Other`.
+- `Residential`;
+- `Commercial`.
 
 ---
 
@@ -118,6 +131,10 @@ com os tipos:
 
 ## Endpoints
 
+Atualmente a API disponibiliza **9 operações REST**.
+
+### Business Partners
+
 | Método | Endpoint | Finalidade |
 | --- | --- | --- |
 | POST | `/api/BusinessPartners` | Criar Business Partner |
@@ -125,7 +142,17 @@ com os tipos:
 | GET | `/api/BusinessPartners/{id}` | Consultar por identificador |
 | PUT | `/api/BusinessPartners/{id}` | Atualizar dados cadastrais |
 | DELETE | `/api/BusinessPartners/{id}` | Inativar Business Partner |
+
+### Phone Numbers
+
+| Método | Endpoint | Finalidade |
+| --- | --- | --- |
 | POST | `/api/BusinessPartners/{id}/phone-numbers` | Associar telefone |
+| GET | `/api/BusinessPartners/{id}/phone-numbers/{phoneNumberId}` | Consultar telefone |
+| PUT | `/api/BusinessPartners/{id}/phone-numbers/{phoneNumberId}` | Atualizar telefone |
+| DELETE | `/api/BusinessPartners/{id}/phone-numbers/{phoneNumberId}` | Remover telefone |
+
+As rotas de telefone permanecem subordinadas ao `BusinessPartner`, refletindo o relacionamento **1:N** definido no domínio.
 
 A documentação completa dos contratos HTTP é disponibilizada através do Swagger/OpenAPI.
 
@@ -146,6 +173,8 @@ A especificação OpenAPI pode ser consultada através de:
 ```
 
 A documentação é gerada a partir da própria aplicação e enriquecida através de XML Documentation Comments e informações dos códigos HTTP esperados.
+
+Atualmente o Swagger documenta todas as **9 operações REST** disponibilizadas pela API.
 
 ---
 
@@ -172,6 +201,36 @@ AddBusinessPartnerDeactivatedAt
       ↓
 AddBusinessPartnerPhoneNumbers
 ```
+
+O relacionamento entre `BusinessPartner` e `PhoneNumber` utiliza:
+
+```csharp
+DeleteBehavior.ClientCascade
+```
+
+Essa configuração permite que o Entity Framework Core trate corretamente a remoção explícita de um telefone pertencente ao agregado enquanto as entidades estão sendo rastreadas pelo contexto.
+
+A decisão mantém a estratégia de persistência na camada Infrastructure e evita transferir detalhes do Entity Framework Core para o domínio ou para a Application.
+
+---
+
+## Estratégias de Remoção
+
+A solução possui comportamentos distintos para as duas entidades:
+
+| Entidade | Estratégia |
+| --- | --- |
+| `BusinessPartner` | Inativação lógica |
+| `PhoneNumber` | Remoção física explícita |
+
+O `BusinessPartner` permanece disponível após sua inativação, com:
+
+```text
+IsActive = false
+DeactivatedAt = data/hora da inativação
+```
+
+Já um `PhoneNumber` removido deixa de existir na persistência.
 
 ---
 
@@ -263,10 +322,10 @@ A estratégia de testes acompanha as responsabilidades arquiteturais da soluçã
 
 | Projeto | Testes | Resultado |
 | --- | ---: | --- |
-| Domain.Tests | 17 | Aprovados |
-| Application.Tests | 10 | Aprovados |
-| Api.Tests | 9 | Aprovados |
-| **Total** | **36** | **36 aprovados** |
+| Domain.Tests | 22 | Aprovados |
+| Application.Tests | 16 | Aprovados |
+| Api.Tests | 15 | Aprovados |
+| **Total** | **53** | **53 aprovados** |
 
 A suíte pode ser executada através de:
 
@@ -277,12 +336,35 @@ dotnet test
 Resultado atual:
 
 ```text
-36 testes executados
-36 testes aprovados
+53 testes executados
+53 testes aprovados
 0 falhas
+0 ignorados
 ```
 
-Os testes cobrem regras de domínio, casos de uso e fluxos HTTP da API.
+Os testes cobrem:
+
+- regras de domínio;
+- casos de uso;
+- fluxos HTTP;
+- inativação lógica;
+- relacionamento 1:N;
+- inclusão de telefone;
+- consulta de telefone;
+- atualização de telefone;
+- remoção de telefone;
+- cenários `404 Not Found`;
+- persistência efetiva da remoção.
+
+A evolução da suíte acompanhou o crescimento funcional da solução:
+
+```text
+26 testes
+    ↓
+36 testes
+    ↓
+53 testes
+```
 
 ---
 
@@ -300,7 +382,8 @@ A Wiki contém:
 - modelo de domínio;
 - persistência e banco de dados;
 - contratos e endpoints da API;
-- decisões técnicas.
+- decisões técnicas;
+- documentação específica sobre persistência e remoção de telefones.
 
 A documentação foi construída juntamente com a evolução da aplicação para manter alinhamento entre implementação, testes e decisões arquiteturais.
 
@@ -315,8 +398,12 @@ Entre as principais decisões adotadas estão:
 - conceitos de DDD sem complexidade desnecessária;
 - `BusinessPartner` como entidade principal do agregado;
 - relacionamento 1:N com `PhoneNumber`;
-- inativação lógica em vez de exclusão física;
+- CRUD de `PhoneNumber` mantido dentro do agregado;
+- inativação lógica de `BusinessPartner`;
+- remoção física explícita de `PhoneNumber`;
+- `DeleteBehavior.ClientCascade` para tratamento da entidade dependente no EF Core;
 - Repository para abstração da persistência;
+- ausência de um `PhoneNumberRepository` sem necessidade concreta;
 - Fluent API para manter o domínio independente do EF Core;
 - migrations para versionamento do banco;
 - contratos HTTP separados das entidades de domínio;
@@ -348,6 +435,8 @@ A solução adota:
 - Wiki;
 - documentação explicativa;
 - mensagens destinadas ao usuário.
+
+Essa separação mantém a nomenclatura técnica consistente sem prejudicar a clareza da documentação destinada à apresentação do projeto.
 
 ---
 
@@ -388,6 +477,22 @@ Validação funcional
 Documentação
      ↓
 Commit
+```
+
+Os testes também foram utilizados como mecanismo de feedback para decisões técnicas.
+
+Um exemplo foi a remoção de `PhoneNumber`, em que o teste de integração identificou o comportamento inadequado da configuração inicial com `DeleteBehavior.Restrict`.
+
+Após a análise, a estratégia foi ajustada para:
+
+```csharp
+DeleteBehavior.ClientCascade
+```
+
+e toda a suíte foi novamente executada com sucesso:
+
+```text
+53 / 53 testes aprovados
 ```
 
 O objetivo foi entregar não apenas uma API funcional, mas uma solução compreensível, testável, documentada e preparada para evolução.
