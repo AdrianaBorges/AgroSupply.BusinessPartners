@@ -31,7 +31,14 @@ public class BusinessPartnersController : ControllerBase
         _addPhoneNumberToBusinessPartnerUseCase = addPhoneNumberToBusinessPartnerUseCase;
     }
 
+    /// <summary>
+    /// Creates a new Business Partner.
+    /// </summary>
+    /// <param name="request">Business Partner data.</param>
+    /// <returns>The created Business Partner.</returns>
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create(
         CreateBusinessPartnerRequest request)
     {
@@ -46,7 +53,14 @@ public class BusinessPartnersController : ControllerBase
             businessPartner);
     }
 
+    /// <summary>
+    /// Gets a Business Partner by identifier.
+    /// </summary>
+    /// <param name="id">Business Partner identifier.</param>
+    /// <returns>The Business Partner when found.</returns>
     [HttpGet("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(Guid id)
     {
         var businessPartner =
@@ -58,7 +72,12 @@ public class BusinessPartnersController : ControllerBase
         return Ok(businessPartner);
     }
 
+    /// <summary>
+    /// Gets all Business Partners.
+    /// </summary>
+    /// <returns>The list of Business Partners.</returns>
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
         var businessPartners =
@@ -67,7 +86,16 @@ public class BusinessPartnersController : ControllerBase
         return Ok(businessPartners);
     }
 
+    /// <summary>
+    /// Updates an existing Business Partner.
+    /// </summary>
+    /// <param name="id">Business Partner identifier.</param>
+    /// <param name="request">Updated Business Partner data.</param>
+    /// <returns>The updated Business Partner.</returns>
     [HttpPut("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Update(
         Guid id,
         UpdateBusinessPartnerRequest request)
@@ -85,6 +113,11 @@ public class BusinessPartnersController : ControllerBase
         return Ok(businessPartner);
     }
 
+    /// <summary>
+    /// Deactivates a Business Partner.
+    /// </summary>
+    /// <param name="id">Business Partner identifier.</param>
+    /// <returns>No content when the Business Partner is successfully deactivated.</returns>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -99,9 +132,16 @@ public class BusinessPartnersController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Adds a phone number to an existing Business Partner.
+    /// </summary>
+    /// <param name="id">Business Partner identifier.</param>
+    /// <param name="request">Phone number data.</param>
+    /// <returns>The Business Partner with the new phone number.</returns>
     [HttpPost("{id:guid}/phone-numbers")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddPhoneNumber(
         Guid id,
         AddPhoneNumberRequest request)
