@@ -32,6 +32,9 @@ builder.Services.AddScoped<GetAllBusinessPartnersUseCase>();
 builder.Services.AddScoped<UpdateBusinessPartnerUseCase>();
 builder.Services.AddScoped<DeactivateBusinessPartnerUseCase>();
 builder.Services.AddScoped<AddPhoneNumberToBusinessPartnerUseCase>();
+builder.Services.AddScoped<GetPhoneNumberFromBusinessPartnerUseCase>();
+builder.Services.AddScoped<UpdatePhoneNumberFromBusinessPartnerUseCase>();
+builder.Services.AddScoped<RemovePhoneNumberFromBusinessPartnerUseCase>();
 
 var app = builder.Build();
 

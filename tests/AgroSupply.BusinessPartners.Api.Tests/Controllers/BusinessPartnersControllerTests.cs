@@ -83,7 +83,6 @@ public class BusinessPartnersControllerTests
 
         Assert.True(
             businessPartner.GetProperty("isActive").GetBoolean());
-
     }
 
     [Fact]
@@ -245,7 +244,6 @@ public class BusinessPartnersControllerTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-
     [Fact]
     public async Task AddPhoneNumber_ShouldReturnOk_WhenBusinessPartnerExists()
     {
@@ -323,5 +321,207 @@ public class BusinessPartnersControllerTests
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetPhoneNumber_ShouldReturnOk_WhenPhoneNumberExists()
+    {
+        // Arrange
+        var (businessPartnerId, phoneNumberId) =
+            await CreateBusinessPartnerWithPhoneNumberAsync();
+
+        // Act
+        var response = await _client.GetAsync(
+            $"/api/BusinessPartners/{businessPartnerId}/phone-numbers/{phoneNumberId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var phoneNumber =
+            await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.Equal(
+            phoneNumberId,
+            phoneNumber.GetProperty("id").GetGuid());
+
+        Assert.Equal(
+            1,
+            phoneNumber.GetProperty("type").GetInt32());
+
+        Assert.Equal(
+            "21999999999",
+            phoneNumber.GetProperty("number").GetString());
+    }
+
+    [Fact]
+    public async Task GetPhoneNumber_ShouldReturnNotFound_WhenPhoneNumberDoesNotExist()
+    {
+        // Arrange
+        var businessPartnerId =
+            await CreateBusinessPartnerAsync();
+
+        var phoneNumberId = Guid.NewGuid();
+
+        // Act
+        var response = await _client.GetAsync(
+            $"/api/BusinessPartners/{businessPartnerId}/phone-numbers/{phoneNumberId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdatePhoneNumber_ShouldReturnOk_WhenPhoneNumberExists()
+    {
+        // Arrange
+        var (businessPartnerId, phoneNumberId) =
+            await CreateBusinessPartnerWithPhoneNumberAsync();
+
+        var request = new
+        {
+            type = 2,
+            number = "2133334444"
+        };
+
+        // Act
+        var response = await _client.PutAsJsonAsync(
+            $"/api/BusinessPartners/{businessPartnerId}/phone-numbers/{phoneNumberId}",
+            request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var phoneNumber =
+            await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.Equal(
+            phoneNumberId,
+            phoneNumber.GetProperty("id").GetGuid());
+
+        Assert.Equal(
+            request.type,
+            phoneNumber.GetProperty("type").GetInt32());
+
+        Assert.Equal(
+            request.number,
+            phoneNumber.GetProperty("number").GetString());
+    }
+
+    [Fact]
+    public async Task UpdatePhoneNumber_ShouldReturnNotFound_WhenPhoneNumberDoesNotExist()
+    {
+        // Arrange
+        var businessPartnerId =
+            await CreateBusinessPartnerAsync();
+
+        var phoneNumberId = Guid.NewGuid();
+
+        var request = new
+        {
+            type = 2,
+            number = "2133334444"
+        };
+
+        // Act
+        var response = await _client.PutAsJsonAsync(
+            $"/api/BusinessPartners/{businessPartnerId}/phone-numbers/{phoneNumberId}",
+            request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeletePhoneNumber_ShouldReturnNoContent_WhenPhoneNumberExists()
+    {
+        // Arrange
+        var (businessPartnerId, phoneNumberId) =
+            await CreateBusinessPartnerWithPhoneNumberAsync();
+
+        // Act
+        var response = await _client.DeleteAsync(
+            $"/api/BusinessPartners/{businessPartnerId}/phone-numbers/{phoneNumberId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        var getResponse = await _client.GetAsync(
+            $"/api/BusinessPartners/{businessPartnerId}/phone-numbers/{phoneNumberId}");
+
+        Assert.Equal(
+            HttpStatusCode.NotFound,
+            getResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeletePhoneNumber_ShouldReturnNotFound_WhenPhoneNumberDoesNotExist()
+    {
+        // Arrange
+        var businessPartnerId =
+            await CreateBusinessPartnerAsync();
+
+        var phoneNumberId = Guid.NewGuid();
+
+        // Act
+        var response = await _client.DeleteAsync(
+            $"/api/BusinessPartners/{businessPartnerId}/phone-numbers/{phoneNumberId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    private async Task<Guid> CreateBusinessPartnerAsync()
+    {
+        var request = new
+        {
+            name = $"Agro Teste {Guid.NewGuid():N}",
+            cpf = "96385274100",
+            birthDate = new DateTime(1990, 5, 15)
+        };
+
+        var response = await _client.PostAsJsonAsync(
+            "/api/BusinessPartners",
+            request);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync();
+
+        using var document = JsonDocument.Parse(content);
+
+        return document.RootElement
+            .GetProperty("id")
+            .GetGuid();
+    }
+
+    private async Task<(Guid BusinessPartnerId, Guid PhoneNumberId)>
+        CreateBusinessPartnerWithPhoneNumberAsync()
+    {
+        var businessPartnerId =
+            await CreateBusinessPartnerAsync();
+
+        var phoneRequest = new
+        {
+            type = 1,
+            number = "21999999999"
+        };
+
+        var response = await _client.PostAsJsonAsync(
+            $"/api/BusinessPartners/{businessPartnerId}/phone-numbers",
+            phoneRequest);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var businessPartner =
+            await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        var phoneNumberId = businessPartner
+            .GetProperty("phoneNumbers")[0]
+            .GetProperty("id")
+            .GetGuid();
+
+        return (
+            businessPartnerId,
+            phoneNumberId);
     }
 }

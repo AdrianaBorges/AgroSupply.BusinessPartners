@@ -12,10 +12,7 @@ public class PhoneNumber
         PhoneNumberType type,
         string number)
     {
-        if (string.IsNullOrWhiteSpace(number))
-            throw new ArgumentException(
-                "O número de telefone é obrigatório.",
-                nameof(number));
+        ValidateNumber(number);
 
         Id = Guid.NewGuid();
         Type = type;
@@ -27,4 +24,22 @@ public class PhoneNumber
     public PhoneNumberType Type { get; private set; }
 
     public string Number { get; private set; } = string.Empty;
+
+    public void Update(
+        PhoneNumberType type,
+        string number)
+    {
+        ValidateNumber(number);
+
+        Type = type;
+        Number = number;
+    }
+
+    private static void ValidateNumber(string number)
+    {
+        if (string.IsNullOrWhiteSpace(number))
+            throw new ArgumentException(
+                "O número de telefone é obrigatório.",
+                nameof(number));
+    }
 }

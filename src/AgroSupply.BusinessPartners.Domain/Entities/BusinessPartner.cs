@@ -6,7 +6,10 @@ public class BusinessPartner
 {
     private readonly List<PhoneNumber> _phoneNumbers = new();
 
-    public BusinessPartner(string name, string cpf, DateTime birthDate)
+    public BusinessPartner(
+        string name,
+        string cpf,
+        DateTime birthDate)
     {
         ValidateName(name);
         ValidateCpf(cpf);
@@ -33,7 +36,10 @@ public class BusinessPartner
     public IReadOnlyCollection<PhoneNumber> PhoneNumbers =>
         _phoneNumbers.AsReadOnly();
 
-    public void Update(string name, string cpf, DateTime birthDate)
+    public void Update(
+        string name,
+        string cpf,
+        DateTime birthDate)
     {
         ValidateName(name);
         ValidateCpf(cpf);
@@ -47,9 +53,46 @@ public class BusinessPartner
         PhoneNumberType type,
         string number)
     {
-        var phoneNumber = new PhoneNumber(type, number);
+        var phoneNumber = new PhoneNumber(
+            type,
+            number);
 
         _phoneNumbers.Add(phoneNumber);
+    }
+
+    public PhoneNumber? GetPhoneNumber(Guid phoneNumberId)
+    {
+        return _phoneNumbers
+            .FirstOrDefault(x => x.Id == phoneNumberId);
+    }
+
+    public bool UpdatePhoneNumber(
+        Guid phoneNumberId,
+        PhoneNumberType type,
+        string number)
+    {
+        var phoneNumber = GetPhoneNumber(phoneNumberId);
+
+        if (phoneNumber is null)
+            return false;
+
+        phoneNumber.Update(
+            type,
+            number);
+
+        return true;
+    }
+
+    public bool RemovePhoneNumber(Guid phoneNumberId)
+    {
+        var phoneNumber = GetPhoneNumber(phoneNumberId);
+
+        if (phoneNumber is null)
+            return false;
+
+        _phoneNumbers.Remove(phoneNumber);
+
+        return true;
     }
 
     public void Deactivate()

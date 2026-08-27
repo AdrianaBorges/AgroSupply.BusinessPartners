@@ -14,6 +14,9 @@ public class BusinessPartnersController : ControllerBase
     private readonly UpdateBusinessPartnerUseCase _updateBusinessPartnerUseCase;
     private readonly DeactivateBusinessPartnerUseCase _deactivateBusinessPartnerUseCase;
     private readonly AddPhoneNumberToBusinessPartnerUseCase _addPhoneNumberToBusinessPartnerUseCase;
+    private readonly GetPhoneNumberFromBusinessPartnerUseCase _getPhoneNumberFromBusinessPartnerUseCase;
+    private readonly UpdatePhoneNumberFromBusinessPartnerUseCase _updatePhoneNumberFromBusinessPartnerUseCase;
+    private readonly RemovePhoneNumberFromBusinessPartnerUseCase _removePhoneNumberFromBusinessPartnerUseCase;
 
     public BusinessPartnersController(
         CreateBusinessPartnerUseCase createBusinessPartnerUseCase,
@@ -21,7 +24,10 @@ public class BusinessPartnersController : ControllerBase
         GetAllBusinessPartnersUseCase getAllBusinessPartnersUseCase,
         UpdateBusinessPartnerUseCase updateBusinessPartnerUseCase,
         DeactivateBusinessPartnerUseCase deactivateBusinessPartnerUseCase,
-        AddPhoneNumberToBusinessPartnerUseCase addPhoneNumberToBusinessPartnerUseCase)
+        AddPhoneNumberToBusinessPartnerUseCase addPhoneNumberToBusinessPartnerUseCase,
+        GetPhoneNumberFromBusinessPartnerUseCase getPhoneNumberFromBusinessPartnerUseCase,
+        UpdatePhoneNumberFromBusinessPartnerUseCase updatePhoneNumberFromBusinessPartnerUseCase,
+        RemovePhoneNumberFromBusinessPartnerUseCase removePhoneNumberFromBusinessPartnerUseCase)
     {
         _createBusinessPartnerUseCase = createBusinessPartnerUseCase;
         _getBusinessPartnerByIdUseCase = getBusinessPartnerByIdUseCase;
@@ -29,6 +35,9 @@ public class BusinessPartnersController : ControllerBase
         _updateBusinessPartnerUseCase = updateBusinessPartnerUseCase;
         _deactivateBusinessPartnerUseCase = deactivateBusinessPartnerUseCase;
         _addPhoneNumberToBusinessPartnerUseCase = addPhoneNumberToBusinessPartnerUseCase;
+        _getPhoneNumberFromBusinessPartnerUseCase = getPhoneNumberFromBusinessPartnerUseCase;
+        _updatePhoneNumberFromBusinessPartnerUseCase = updatePhoneNumberFromBusinessPartnerUseCase;
+        _removePhoneNumberFromBusinessPartnerUseCase = removePhoneNumberFromBusinessPartnerUseCase;
     }
 
     /// <summary>
@@ -156,5 +165,82 @@ public class BusinessPartnersController : ControllerBase
             return NotFound();
 
         return Ok(businessPartner);
+    }
+
+    /// <summary>
+    /// Gets a phone number from an existing Business Partner.
+    /// </summary>
+    /// <param name="id">Business Partner identifier.</param>
+    /// <param name="phoneNumberId">Phone number identifier.</param>
+    /// <returns>The phone number when found.</returns>
+    [HttpGet("{id:guid}/phone-numbers/{phoneNumberId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPhoneNumber(
+        Guid id,
+        Guid phoneNumberId)
+    {
+        var phoneNumber =
+            await _getPhoneNumberFromBusinessPartnerUseCase.ExecuteAsync(
+                id,
+                phoneNumberId);
+
+        if (phoneNumber is null)
+            return NotFound();
+
+        return Ok(phoneNumber);
+    }
+
+    /// <summary>
+    /// Updates a phone number from an existing Business Partner.
+    /// </summary>
+    /// <param name="id">Business Partner identifier.</param>
+    /// <param name="phoneNumberId">Phone number identifier.</param>
+    /// <param name="request">Updated phone number data.</param>
+    /// <returns>The updated phone number.</returns>
+    [HttpPut("{id:guid}/phone-numbers/{phoneNumberId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdatePhoneNumber(
+        Guid id,
+        Guid phoneNumberId,
+        UpdatePhoneNumberRequest request)
+    {
+        var phoneNumber =
+            await _updatePhoneNumberFromBusinessPartnerUseCase.ExecuteAsync(
+                id,
+                phoneNumberId,
+                request.Type,
+                request.Number);
+
+        if (phoneNumber is null)
+            return NotFound();
+
+        return Ok(phoneNumber);
+    }
+
+    /// <summary>
+    /// Removes a phone number from an existing Business Partner.
+    /// </summary>
+    /// <param name="id">Business Partner identifier.</param>
+    /// <param name="phoneNumberId">Phone number identifier.</param>
+    /// <returns>No content when the phone number is successfully removed.</returns>
+    [HttpDelete("{id:guid}/phone-numbers/{phoneNumberId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeletePhoneNumber(
+        Guid id,
+        Guid phoneNumberId)
+    {
+        var removed =
+            await _removePhoneNumberFromBusinessPartnerUseCase.ExecuteAsync(
+                id,
+                phoneNumberId);
+
+        if (!removed)
+            return NotFound();
+
+        return NoContent();
     }
 }

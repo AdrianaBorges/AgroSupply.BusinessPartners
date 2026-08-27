@@ -268,4 +268,121 @@ public class BusinessPartnerTests
             phone => phone.Type == PhoneNumberType.Commercial &&
                      phone.Number == "2133334444");
     }
+
+    [Fact]
+    public void GetPhoneNumber_ShouldReturnPhoneNumber_WhenItExists()
+    {
+        // Arrange
+        var businessPartner = new BusinessPartner(
+            "Agro Teste Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
+
+        businessPartner.AddPhoneNumber(
+            PhoneNumberType.Mobile,
+            "21999999999");
+
+        var phoneNumber = businessPartner.PhoneNumbers.Single();
+
+        // Act
+        var result = businessPartner.GetPhoneNumber(phoneNumber.Id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(phoneNumber.Id, result.Id);
+    }
+
+    [Fact]
+    public void UpdatePhoneNumber_ShouldUpdatePhoneNumber_WhenItExists()
+    {
+        // Arrange
+        var businessPartner = new BusinessPartner(
+            "Agro Teste Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
+
+        businessPartner.AddPhoneNumber(
+            PhoneNumberType.Mobile,
+            "21999999999");
+
+        var phoneNumber = businessPartner.PhoneNumbers.Single();
+
+        // Act
+        var updated = businessPartner.UpdatePhoneNumber(
+            phoneNumber.Id,
+            PhoneNumberType.Residential,
+            "2133334444");
+
+        // Assert
+        Assert.True(updated);
+
+        var result = businessPartner.GetPhoneNumber(phoneNumber.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal(
+            PhoneNumberType.Residential,
+            result.Type);
+        Assert.Equal(
+            "2133334444",
+            result.Number);
+    }
+
+    [Fact]
+    public void RemovePhoneNumber_ShouldRemovePhoneNumber_WhenItExists()
+    {
+        // Arrange
+        var businessPartner = new BusinessPartner(
+            "Agro Teste Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
+
+        businessPartner.AddPhoneNumber(
+            PhoneNumberType.Mobile,
+            "21999999999");
+
+        var phoneNumber = businessPartner.PhoneNumbers.Single();
+
+        // Act
+        var removed = businessPartner.RemovePhoneNumber(phoneNumber.Id);
+
+        // Assert
+        Assert.True(removed);
+        Assert.Empty(businessPartner.PhoneNumbers);
+    }
+
+    [Fact]
+    public void UpdatePhoneNumber_ShouldReturnFalse_WhenPhoneNumberDoesNotExist()
+    {
+        // Arrange
+        var businessPartner = new BusinessPartner(
+            "Agro Teste Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
+
+        // Act
+        var result = businessPartner.UpdatePhoneNumber(
+            Guid.NewGuid(),
+            PhoneNumberType.Mobile,
+            "21999999999");
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void RemovePhoneNumber_ShouldReturnFalse_WhenPhoneNumberDoesNotExist()
+    {
+        // Arrange
+        var businessPartner = new BusinessPartner(
+            "Agro Teste Ltda",
+            "12345678901",
+            new DateTime(1990, 5, 15));
+
+        // Act
+        var result = businessPartner.RemovePhoneNumber(
+            Guid.NewGuid());
+
+        // Assert
+        Assert.False(result);
+    }
 }

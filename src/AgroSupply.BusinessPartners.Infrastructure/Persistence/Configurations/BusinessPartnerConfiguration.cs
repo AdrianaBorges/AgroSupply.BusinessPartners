@@ -30,10 +30,10 @@ public class BusinessPartnerConfiguration : IEntityTypeConfiguration<BusinessPar
             .IsRequired(false);
 
         builder.HasMany(x => x.PhoneNumbers)
-           .WithOne()
-           .HasForeignKey("BusinessPartnerId")
-           .IsRequired()
-           .OnDelete(DeleteBehavior.Restrict);
+            .WithOne()
+            .HasForeignKey("BusinessPartnerId")
+            .IsRequired()
+            .OnDelete(DeleteBehavior.ClientCascade);
 
     }
 }
