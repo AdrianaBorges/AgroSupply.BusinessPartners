@@ -10,4 +10,8 @@ public interface IBusinessRelationshipRepository
 
     Task UpdateAsync(BusinessRelationship relationship);
 
+    Task<bool> ExistsActiveAsync(
+    Guid supplierBusinessPartnerId,
+    Guid buyerBusinessPartnerId);
+
 }

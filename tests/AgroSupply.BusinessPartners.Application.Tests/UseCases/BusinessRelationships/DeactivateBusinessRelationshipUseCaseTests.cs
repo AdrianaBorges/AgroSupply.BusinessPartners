@@ -89,5 +89,12 @@ public class DeactivateBusinessRelationshipUseCaseTests
 
             return Task.CompletedTask;
         }
+
+        public Task<bool> ExistsActiveAsync(
+            Guid supplierBusinessPartnerId,
+            Guid buyerBusinessPartnerId)
+        {
+            return Task.FromResult(false);
+        }
     }
 }

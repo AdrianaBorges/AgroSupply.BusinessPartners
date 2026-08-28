@@ -93,6 +93,67 @@ public class BusinessRelationshipsControllerTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Create_ShouldReturnNotFound_WhenSupplierIsInactive()
+    {
+        // Arrange
+        var supplierId =
+            await CreateBusinessPartnerAsync();
+
+        var buyerId =
+            await CreateBusinessPartnerAsync();
+
+        await _client.DeleteAsync(
+            $"/api/BusinessPartners/{supplierId}");
+
+        var request = new
+        {
+            supplierBusinessPartnerId = supplierId,
+            buyerBusinessPartnerId = buyerId
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(
+            "/api/business-relationships",
+            request);
+
+        // Assert
+        Assert.Equal(
+            HttpStatusCode.NotFound,
+            response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_ShouldReturnNotFound_WhenBuyerIsInactive()
+    {
+        // Arrange
+        var supplierId =
+            await CreateBusinessPartnerAsync();
+
+        var buyerId =
+            await CreateBusinessPartnerAsync();
+
+        await _client.DeleteAsync(
+            $"/api/BusinessPartners/{buyerId}");
+
+        var request = new
+        {
+            supplierBusinessPartnerId = supplierId,
+            buyerBusinessPartnerId = buyerId
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(
+            "/api/business-relationships",
+            request);
+
+        // Assert
+        Assert.Equal(
+            HttpStatusCode.NotFound,
+            response.StatusCode);
+    }
+
+
     private async Task<Guid> CreateBusinessPartnerAsync()
     {
         var request = new
@@ -187,4 +248,122 @@ public class BusinessRelationshipsControllerTests
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Create_ShouldReturnBadRequest_WhenSupplierAndBuyerAreTheSame()
+    {
+        // Arrange
+        var businessPartnerId =
+            await CreateBusinessPartnerAsync();
+
+        var request = new
+        {
+            supplierBusinessPartnerId = businessPartnerId,
+            buyerBusinessPartnerId = businessPartnerId
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(
+            "/api/business-relationships",
+            request);
+
+        // Assert
+        Assert.Equal(
+            HttpStatusCode.BadRequest,
+            response.StatusCode);
+
+        var content =
+            await response.Content.ReadAsStringAsync();
+
+        Assert.Contains(
+            "Um parceiro de negócio não pode estabelecer uma relação comercial consigo mesmo.",
+            content);
+    }
+
+    [Fact]
+    public async Task Create_ShouldReturnNotFound_WhenSupplierDoesNotExist()
+    {
+        // Arrange
+        var buyerId =
+            await CreateBusinessPartnerAsync();
+
+        var request = new
+        {
+            supplierBusinessPartnerId = Guid.NewGuid(),
+            buyerBusinessPartnerId = buyerId
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(
+            "/api/business-relationships",
+            request);
+
+        // Assert
+        Assert.Equal(
+            HttpStatusCode.NotFound,
+            response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_ShouldReturnNotFound_WhenBuyerDoesNotExist()
+    {
+        // Arrange
+        var supplierId =
+            await CreateBusinessPartnerAsync();
+
+        var request = new
+        {
+            supplierBusinessPartnerId = supplierId,
+            buyerBusinessPartnerId = Guid.NewGuid()
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(
+            "/api/business-relationships",
+            request);
+
+        // Assert
+        Assert.Equal(
+            HttpStatusCode.NotFound,
+            response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_ShouldReturnConflict_WhenActiveRelationshipAlreadyExists()
+    {
+        // Arrange
+        var supplierId =
+            await CreateBusinessPartnerAsync();
+
+        var buyerId =
+            await CreateBusinessPartnerAsync();
+
+        var request = new
+        {
+            supplierBusinessPartnerId = supplierId,
+            buyerBusinessPartnerId = buyerId
+        };
+
+        var firstResponse =
+            await _client.PostAsJsonAsync(
+                "/api/business-relationships",
+                request);
+
+        Assert.Equal(
+            HttpStatusCode.Created,
+            firstResponse.StatusCode);
+
+        // Act
+        var secondResponse =
+            await _client.PostAsJsonAsync(
+                "/api/business-relationships",
+                request);
+
+        // Assert
+        Assert.Equal(
+            HttpStatusCode.Conflict,
+            secondResponse.StatusCode);
+    }
+
+
 }

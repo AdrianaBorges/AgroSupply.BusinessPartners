@@ -24,23 +24,41 @@ public class BusinessRelationshipsController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Create(
-        CreateBusinessRelationshipRequest request)
+         CreateBusinessRelationshipRequest request)
     {
-        var relationship = await _createBusinessRelationshipUseCase.ExecuteAsync(
-            request.SupplierBusinessPartnerId,
-            request.BuyerBusinessPartnerId);
+        try
+        {
+            var relationship =
+                await _createBusinessRelationshipUseCase.ExecuteAsync(
+                    request.SupplierBusinessPartnerId,
+                    request.BuyerBusinessPartnerId);
 
-        if (relationship is null)
-            return NotFound();
+            if (relationship is null)
+                return NotFound();
 
-        return CreatedAtAction(
-            nameof(GetById),
-            new { id = relationship.Id },
-            relationship);
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = relationship.Id },
+                relationship);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
+        }
     }
 
     [HttpGet("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(Guid id)
     {
         var relationship = await _relationshipRepository.GetByIdAsync(id);
@@ -52,7 +70,9 @@ public class BusinessRelationshipsController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Deactivate(Guid id)
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(Guid id)
     {
         var result =
             await _deactivateBusinessRelationshipUseCase.ExecuteAsync(id);

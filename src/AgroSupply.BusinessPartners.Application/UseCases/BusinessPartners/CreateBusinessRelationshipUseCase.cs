@@ -34,6 +34,15 @@ public class CreateBusinessRelationshipUseCase
         if (buyer is null || !buyer.IsActive)
             return null;
 
+        var relationshipExists =
+            await _relationshipRepository.ExistsActiveAsync(
+                supplierBusinessPartnerId,
+                buyerBusinessPartnerId);
+
+        if (relationshipExists)
+            throw new InvalidOperationException(
+                "Já existe um relacionamento comercial ativo entre os parceiros informados.");
+
         var relationship = new BusinessRelationship(
             supplierBusinessPartnerId,
             buyerBusinessPartnerId);
