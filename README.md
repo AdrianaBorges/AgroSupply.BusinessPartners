@@ -1,8 +1,8 @@
 # AgroSupply.BusinessPartners
 
-API REST desenvolvida em **.NET 8** para gerenciamento de parceiros de negócios em um contexto B2B, aplicando princípios de **DDD**, **Clean Architecture**, persistência com **Entity Framework Core** e **testes automatizados**.
+API REST desenvolvida em **.NET 8** para gerenciamento de parceiros de negócios em um contexto B2B, aplicando princípios de **DDD**, **Clean Architecture**, persistência com **Entity Framework Core**, **autenticação JWT**, **logging estruturado** e **testes automatizados**.
 
-O projeto foi desenvolvido de forma incremental, priorizando separação de responsabilidades, testabilidade, documentação e simplicidade arquitetural.
+O projeto foi desenvolvido de forma incremental, priorizando separação de responsabilidades, testabilidade, segurança, documentação e simplicidade arquitetural.
 
 ---
 
@@ -18,7 +18,13 @@ A API disponibiliza atualmente:
 - associação de múltiplos números de telefone;
 - consulta individual de telefone;
 - atualização de telefone;
-- remoção de telefone.
+- remoção de telefone;
+- criação de relacionamentos comerciais B2B;
+- consulta de relacionamentos comerciais;
+- inativação de relacionamentos comerciais;
+- autenticação baseada em JWT;
+- proteção de endpoints através de Bearer Token;
+- logging estruturado dos principais fluxos da API.
 
 A inativação do `BusinessPartner` preserva o registro para fins de rastreabilidade através de:
 
@@ -28,6 +34,8 @@ DeactivatedAt = data/hora da inativação
 ```
 
 Já a remoção de `PhoneNumber` representa uma exclusão física da entidade dependente pertencente ao agregado.
+
+Os relacionamentos comerciais entre parceiros são representados por `BusinessRelationship`, permitindo estabelecer uma relação entre fornecedor (`Supplier`) e comprador (`Buyer`).
 
 ---
 
@@ -59,7 +67,7 @@ As responsabilidades estão distribuídas da seguinte forma:
 | Domain | Entidades, estados e comportamentos de negócio |
 | Application | Casos de uso e abstrações |
 | Infrastructure | Persistência e implementações técnicas |
-| API | Contratos e endpoints REST |
+| API | Contratos, autenticação e endpoints REST |
 
 O fluxo principal segue:
 
@@ -114,6 +122,27 @@ com os tipos:
 - `Residential`;
 - `Commercial`.
 
+### Relacionamentos B2B
+
+A entidade `BusinessRelationship` representa uma relação comercial entre dois parceiros:
+
+```text
+Supplier ───── BusinessRelationship ───── Buyer
+```
+
+Entre as regras implementadas estão:
+
+- fornecedor e comprador são obrigatórios;
+- um parceiro não pode estabelecer relacionamento comercial consigo mesmo;
+- fornecedor e comprador devem existir;
+- ambos os parceiros devem estar ativos;
+- o relacionamento é criado com status ativo;
+- relacionamentos podem ser inativados;
+- a inativação é idempotente;
+- não é permitido criar mais de um relacionamento ativo entre o mesmo fornecedor e comprador;
+- o relacionamento inverso representa uma relação comercial distinta;
+- um relacionamento anteriormente inativado não impede a criação de uma nova relação ativa.
+
 ---
 
 ## Tecnologias
@@ -122,8 +151,12 @@ com os tipos:
 - ASP.NET Core Web API
 - Entity Framework Core 8
 - SQL Server / LocalDB
+- JWT Bearer Authentication
 - Swagger / OpenAPI
+- `ILogger<T>`
 - xUnit
+- Microsoft.AspNetCore.Mvc.Testing
+- Entity Framework Core InMemory
 - Docker
 - Git
 
@@ -131,7 +164,13 @@ com os tipos:
 
 ## Endpoints
 
-Atualmente a API disponibiliza **9 operações REST**.
+Atualmente a API disponibiliza **13 operações REST**.
+
+### Authentication
+
+| Método | Endpoint | Finalidade |
+| --- | --- | --- |
+| POST | `/api/authentication/login` | Autenticar e obter JWT |
 
 ### Business Partners
 
@@ -152,9 +191,68 @@ Atualmente a API disponibiliza **9 operações REST**.
 | PUT | `/api/BusinessPartners/{id}/phone-numbers/{phoneNumberId}` | Atualizar telefone |
 | DELETE | `/api/BusinessPartners/{id}/phone-numbers/{phoneNumberId}` | Remover telefone |
 
+### Business Relationships
+
+| Método | Endpoint | Finalidade |
+| --- | --- | --- |
+| POST | `/api/business-relationships` | Criar relacionamento comercial |
+| GET | `/api/business-relationships/{id}` | Consultar relacionamento |
+| DELETE | `/api/business-relationships/{id}` | Inativar relacionamento |
+
 As rotas de telefone permanecem subordinadas ao `BusinessPartner`, refletindo o relacionamento **1:N** definido no domínio.
 
+Os endpoints de Business Partners e Business Relationships são protegidos por autenticação JWT.
+
 A documentação completa dos contratos HTTP é disponibilizada através do Swagger/OpenAPI.
+
+---
+
+## Autenticação JWT
+
+A API utiliza autenticação baseada em **JWT (JSON Web Token)**.
+
+O endpoint:
+
+```text
+POST /api/authentication/login
+```
+
+recebe as credenciais de autenticação e, quando válidas, retorna um token de acesso do tipo Bearer.
+
+O token deve ser enviado nas requisições protegidas através do header:
+
+```text
+Authorization: Bearer {token}
+```
+
+Os controllers responsáveis por Business Partners e Business Relationships utilizam `[Authorize]`, impedindo o acesso anônimo aos recursos protegidos.
+
+As credenciais destinadas à avaliação técnica da solução estão documentadas na Wiki do projeto.
+
+A configuração foi estruturada de forma que credenciais de demonstração utilizadas no ambiente de desenvolvimento não representem a estratégia recomendada para ambientes produtivos.
+
+---
+
+## Logging Estruturado
+
+A API utiliza o mecanismo nativo de logging do ASP.NET Core através de:
+
+```csharp
+ILogger<T>
+```
+
+São registrados eventos relevantes dos principais fluxos, incluindo:
+
+- início de operações;
+- conclusão de operações;
+- recursos não encontrados;
+- tentativas de operações inválidas;
+- conflitos de regras de negócio;
+- autenticação válida e inválida.
+
+Os logs utilizam parâmetros estruturados para facilitar rastreabilidade e diagnóstico.
+
+Dados pessoais sensíveis do Business Partner, como CPF, nome e telefone, não são registrados nos eventos de negócio implementados.
 
 ---
 
@@ -174,7 +272,9 @@ A especificação OpenAPI pode ser consultada através de:
 
 A documentação é gerada a partir da própria aplicação e enriquecida através de XML Documentation Comments e informações dos códigos HTTP esperados.
 
-Atualmente o Swagger documenta todas as **9 operações REST** disponibilizadas pela API.
+O Swagger também está configurado para utilização de autenticação Bearer, permitindo informar o JWT através da opção **Authorize** e executar os endpoints protegidos diretamente pela interface.
+
+Atualmente o Swagger documenta todas as **13 operações REST** disponibilizadas pela API.
 
 ---
 
@@ -182,14 +282,22 @@ Atualmente o Swagger documenta todas as **9 operações REST** disponibilizadas 
 
 A persistência utiliza **SQL Server** através do **Entity Framework Core 8**.
 
-O modelo atualmente possui as estruturas:
+O modelo contempla:
 
 ```text
-BusinessPartners
+BusinessPartner
       │
       │ 1:N
       ▼
-PhoneNumbers
+PhoneNumber
+
+Supplier
+      │
+      ▼
+BusinessRelationship
+      │
+      ▼
+Buyer
 ```
 
 A evolução do schema é controlada através de migrations:
@@ -200,6 +308,8 @@ InitialCreate
 AddBusinessPartnerDeactivatedAt
       ↓
 AddBusinessPartnerPhoneNumbers
+      ↓
+AddBusinessRelationships
 ```
 
 O relacionamento entre `BusinessPartner` e `PhoneNumber` utiliza:
@@ -216,12 +326,13 @@ A decisão mantém a estratégia de persistência na camada Infrastructure e evi
 
 ## Estratégias de Remoção
 
-A solução possui comportamentos distintos para as duas entidades:
+A solução possui comportamentos distintos conforme a responsabilidade de cada entidade:
 
 | Entidade | Estratégia |
 | --- | --- |
 | `BusinessPartner` | Inativação lógica |
 | `PhoneNumber` | Remoção física explícita |
+| `BusinessRelationship` | Inativação lógica |
 
 O `BusinessPartner` permanece disponível após sua inativação, com:
 
@@ -231,6 +342,8 @@ DeactivatedAt = data/hora da inativação
 ```
 
 Já um `PhoneNumber` removido deixa de existir na persistência.
+
+O `BusinessRelationship` preserva o histórico da relação comercial após sua inativação.
 
 ---
 
@@ -314,18 +427,19 @@ Após iniciar a aplicação, acesse o Swagger através da URL exibida no termina
 /swagger
 ```
 
+Para acessar os endpoints protegidos, realize a autenticação através de:
+
+```text
+POST /api/authentication/login
+```
+
+e informe o token obtido na opção **Authorize** do Swagger.
+
 ---
 
 ## Testes Automatizados
 
-A estratégia de testes acompanha as responsabilidades arquiteturais da solução.
-
-| Projeto | Testes | Resultado |
-| --- | ---: | --- |
-| Domain.Tests | 22 | Aprovados |
-| Application.Tests | 16 | Aprovados |
-| Api.Tests | 15 | Aprovados |
-| **Total** | **53** | **53 aprovados** |
+A estratégia de testes acompanha as responsabilidades arquiteturais da solução e evoluiu juntamente com as funcionalidades implementadas.
 
 A suíte pode ser executada através de:
 
@@ -336,13 +450,12 @@ dotnet test
 Resultado atual:
 
 ```text
-53 testes executados
-53 testes aprovados
+81 testes executados
+81 testes aprovados
 0 falhas
-0 ignorados
 ```
 
-Os testes cobrem:
+Os testes cobrem, entre outros cenários:
 
 - regras de domínio;
 - casos de uso;
@@ -354,7 +467,17 @@ Os testes cobrem:
 - atualização de telefone;
 - remoção de telefone;
 - cenários `404 Not Found`;
-- persistência efetiva da remoção.
+- persistência efetiva da remoção;
+- criação de relacionamentos B2B;
+- validação de fornecedor e comprador;
+- bloqueio de autorrelacionamento;
+- bloqueio de relacionamento ativo duplicado;
+- inativação de relacionamentos comerciais;
+- autenticação com credenciais válidas;
+- rejeição de credenciais inválidas;
+- retorno `401 Unauthorized` para acesso não autenticado a endpoint protegido.
+
+Os testes de integração da API utilizam `WebApplicationFactory` e banco em memória para manter isolamento em relação ao banco de desenvolvimento.
 
 A evolução da suíte acompanhou o crescimento funcional da solução:
 
@@ -364,6 +487,10 @@ A evolução da suíte acompanhou o crescimento funcional da solução:
 36 testes
     ↓
 53 testes
+    ↓
+78 testes
+    ↓
+81 testes
 ```
 
 ---
@@ -376,6 +503,8 @@ A Wiki contém:
 
 - visão geral do projeto;
 - evidências de testes funcionais;
+- evidências funcionais dos relacionamentos B2B;
+- autenticação JWT;
 - testes automatizados;
 - documentação Swagger/OpenAPI;
 - arquitetura da solução;
@@ -383,7 +512,8 @@ A Wiki contém:
 - persistência e banco de dados;
 - contratos e endpoints da API;
 - decisões técnicas;
-- documentação específica sobre persistência e remoção de telefones.
+- documentação específica sobre persistência e remoção de telefones;
+- evidências de logging estruturado.
 
 A documentação foi construída juntamente com a evolução da aplicação para manter alinhamento entre implementação, testes e decisões arquiteturais.
 
@@ -399,16 +529,25 @@ Entre as principais decisões adotadas estão:
 - `BusinessPartner` como entidade principal do agregado;
 - relacionamento 1:N com `PhoneNumber`;
 - CRUD de `PhoneNumber` mantido dentro do agregado;
+- `BusinessRelationship` para representação das relações comerciais B2B;
+- distinção explícita entre fornecedor (`Supplier`) e comprador (`Buyer`);
 - inativação lógica de `BusinessPartner`;
 - remoção física explícita de `PhoneNumber`;
+- inativação lógica de `BusinessRelationship`;
 - `DeleteBehavior.ClientCascade` para tratamento da entidade dependente no EF Core;
-- Repository para abstração da persistência;
+- Repository Pattern para abstração da persistência;
 - ausência de um `PhoneNumberRepository` sem necessidade concreta;
 - Fluent API para manter o domínio independente do EF Core;
 - migrations para versionamento do banco;
 - contratos HTTP separados das entidades de domínio;
-- Swagger/OpenAPI integrado ao código;
-- testes automatizados desenvolvidos incrementalmente.
+- autenticação JWT através de Bearer Token;
+- serviço de autenticação abstraído através de `IAuthenticationService`;
+- geração de tokens centralizada em `JwtTokenService`;
+- proteção de recursos através de `[Authorize]`;
+- logging estruturado utilizando `ILogger<T>`;
+- Swagger/OpenAPI integrado ao código e configurado para autenticação Bearer;
+- testes automatizados desenvolvidos incrementalmente;
+- testes de integração isolados através de `WebApplicationFactory` e EF Core InMemory.
 
 Também foi deliberadamente evitada a inclusão de componentes como CQRS completo, MediatR, mensageria e outras abstrações que não apresentavam necessidade concreta para o escopo atual.
 
@@ -489,10 +628,13 @@ Após a análise, a estratégia foi ajustada para:
 DeleteBehavior.ClientCascade
 ```
 
-e toda a suíte foi novamente executada com sucesso:
+A evolução das funcionalidades B2B e de autenticação também foi acompanhada pela ampliação da cobertura automatizada.
+
+Ao final da implementação atual, toda a suíte foi executada com sucesso:
 
 ```text
-53 / 53 testes aprovados
+81 / 81 testes aprovados
+0 falhas
 ```
 
-O objetivo foi entregar não apenas uma API funcional, mas uma solução compreensível, testável, documentada e preparada para evolução.
+O objetivo foi entregar não apenas uma API funcional, mas uma solução compreensível, segura, testável, documentada e preparada para evolução.
