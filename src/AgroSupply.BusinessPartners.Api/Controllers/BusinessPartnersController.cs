@@ -1,5 +1,5 @@
-﻿using AgroSupply.BusinessPartners.Application.UseCases.BusinessPartners;
-using AgroSupply.BusinessPartners.Api.Contracts.BusinessPartners;
+﻿using AgroSupply.BusinessPartners.Api.Contracts.BusinessPartners;
+using AgroSupply.BusinessPartners.Application.UseCases.BusinessPartners;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AgroSupply.BusinessPartners.Api.Controllers;
@@ -17,6 +17,7 @@ public class BusinessPartnersController : ControllerBase
     private readonly GetPhoneNumberFromBusinessPartnerUseCase _getPhoneNumberFromBusinessPartnerUseCase;
     private readonly UpdatePhoneNumberFromBusinessPartnerUseCase _updatePhoneNumberFromBusinessPartnerUseCase;
     private readonly RemovePhoneNumberFromBusinessPartnerUseCase _removePhoneNumberFromBusinessPartnerUseCase;
+    private readonly ILogger<BusinessPartnersController> _logger;
 
     public BusinessPartnersController(
         CreateBusinessPartnerUseCase createBusinessPartnerUseCase,
@@ -27,7 +28,8 @@ public class BusinessPartnersController : ControllerBase
         AddPhoneNumberToBusinessPartnerUseCase addPhoneNumberToBusinessPartnerUseCase,
         GetPhoneNumberFromBusinessPartnerUseCase getPhoneNumberFromBusinessPartnerUseCase,
         UpdatePhoneNumberFromBusinessPartnerUseCase updatePhoneNumberFromBusinessPartnerUseCase,
-        RemovePhoneNumberFromBusinessPartnerUseCase removePhoneNumberFromBusinessPartnerUseCase)
+        RemovePhoneNumberFromBusinessPartnerUseCase removePhoneNumberFromBusinessPartnerUseCase,
+        ILogger<BusinessPartnersController> logger)
     {
         _createBusinessPartnerUseCase = createBusinessPartnerUseCase;
         _getBusinessPartnerByIdUseCase = getBusinessPartnerByIdUseCase;
@@ -38,6 +40,7 @@ public class BusinessPartnersController : ControllerBase
         _getPhoneNumberFromBusinessPartnerUseCase = getPhoneNumberFromBusinessPartnerUseCase;
         _updatePhoneNumberFromBusinessPartnerUseCase = updatePhoneNumberFromBusinessPartnerUseCase;
         _removePhoneNumberFromBusinessPartnerUseCase = removePhoneNumberFromBusinessPartnerUseCase;
+        _logger = logger;
     }
 
     /// <summary>
@@ -51,13 +54,21 @@ public class BusinessPartnersController : ControllerBase
     public async Task<IActionResult> Create(
         CreateBusinessPartnerRequest request)
     {
-        var businessPartner = await _createBusinessPartnerUseCase.ExecuteAsync(
-            request.Name,
-            request.Cpf,
-            request.BirthDate);
+        _logger.LogInformation(
+            "Iniciando criação de Business Partner.");
+
+        var businessPartner =
+            await _createBusinessPartnerUseCase.ExecuteAsync(
+                request.Name,
+                request.Cpf,
+                request.BirthDate);
+
+        _logger.LogInformation(
+            "Business Partner {BusinessPartnerId} criado com sucesso.",
+            businessPartner.Id);
 
         return CreatedAtAction(
-            nameof(Create),
+            nameof(GetById),
             new { id = businessPartner.Id },
             businessPartner);
     }
@@ -76,7 +87,13 @@ public class BusinessPartnersController : ControllerBase
             await _getBusinessPartnerByIdUseCase.ExecuteAsync(id);
 
         if (businessPartner is null)
+        {
+            _logger.LogWarning(
+                "Business Partner {BusinessPartnerId} não encontrado.",
+                id);
+
             return NotFound();
+        }
 
         return Ok(businessPartner);
     }
@@ -109,6 +126,10 @@ public class BusinessPartnersController : ControllerBase
         Guid id,
         UpdateBusinessPartnerRequest request)
     {
+        _logger.LogInformation(
+            "Iniciando atualização do Business Partner {BusinessPartnerId}.",
+            id);
+
         var businessPartner =
             await _updateBusinessPartnerUseCase.ExecuteAsync(
                 id,
@@ -117,7 +138,17 @@ public class BusinessPartnersController : ControllerBase
                 request.BirthDate);
 
         if (businessPartner is null)
+        {
+            _logger.LogWarning(
+                "Business Partner {BusinessPartnerId} não encontrado para atualização.",
+                id);
+
             return NotFound();
+        }
+
+        _logger.LogInformation(
+            "Business Partner {BusinessPartnerId} atualizado com sucesso.",
+            id);
 
         return Ok(businessPartner);
     }
@@ -132,11 +163,25 @@ public class BusinessPartnersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id)
     {
+        _logger.LogInformation(
+            "Iniciando inativação do Business Partner {BusinessPartnerId}.",
+            id);
+
         var businessPartner =
             await _deactivateBusinessPartnerUseCase.ExecuteAsync(id);
 
         if (businessPartner is null)
+        {
+            _logger.LogWarning(
+                "Business Partner {BusinessPartnerId} não encontrado para inativação.",
+                id);
+
             return NotFound();
+        }
+
+        _logger.LogInformation(
+            "Business Partner {BusinessPartnerId} inativado com sucesso.",
+            id);
 
         return NoContent();
     }
@@ -155,6 +200,10 @@ public class BusinessPartnersController : ControllerBase
         Guid id,
         AddPhoneNumberRequest request)
     {
+        _logger.LogInformation(
+            "Iniciando inclusão de telefone no Business Partner {BusinessPartnerId}.",
+            id);
+
         var businessPartner =
             await _addPhoneNumberToBusinessPartnerUseCase.ExecuteAsync(
                 id,
@@ -162,7 +211,17 @@ public class BusinessPartnersController : ControllerBase
                 request.Number);
 
         if (businessPartner is null)
+        {
+            _logger.LogWarning(
+                "Business Partner {BusinessPartnerId} não encontrado para inclusão de telefone.",
+                id);
+
             return NotFound();
+        }
+
+        _logger.LogInformation(
+            "Telefone incluído com sucesso no Business Partner {BusinessPartnerId}.",
+            id);
 
         return Ok(businessPartner);
     }
@@ -186,7 +245,14 @@ public class BusinessPartnersController : ControllerBase
                 phoneNumberId);
 
         if (phoneNumber is null)
+        {
+            _logger.LogWarning(
+                "Telefone {PhoneNumberId} não encontrado no Business Partner {BusinessPartnerId}.",
+                phoneNumberId,
+                id);
+
             return NotFound();
+        }
 
         return Ok(phoneNumber);
     }
@@ -207,6 +273,11 @@ public class BusinessPartnersController : ControllerBase
         Guid phoneNumberId,
         UpdatePhoneNumberRequest request)
     {
+        _logger.LogInformation(
+            "Iniciando atualização do telefone {PhoneNumberId} do Business Partner {BusinessPartnerId}.",
+            phoneNumberId,
+            id);
+
         var phoneNumber =
             await _updatePhoneNumberFromBusinessPartnerUseCase.ExecuteAsync(
                 id,
@@ -215,7 +286,19 @@ public class BusinessPartnersController : ControllerBase
                 request.Number);
 
         if (phoneNumber is null)
+        {
+            _logger.LogWarning(
+                "Telefone {PhoneNumberId} não encontrado no Business Partner {BusinessPartnerId} para atualização.",
+                phoneNumberId,
+                id);
+
             return NotFound();
+        }
+
+        _logger.LogInformation(
+            "Telefone {PhoneNumberId} do Business Partner {BusinessPartnerId} atualizado com sucesso.",
+            phoneNumberId,
+            id);
 
         return Ok(phoneNumber);
     }
@@ -233,13 +316,30 @@ public class BusinessPartnersController : ControllerBase
         Guid id,
         Guid phoneNumberId)
     {
+        _logger.LogInformation(
+            "Iniciando remoção do telefone {PhoneNumberId} do Business Partner {BusinessPartnerId}.",
+            phoneNumberId,
+            id);
+
         var removed =
             await _removePhoneNumberFromBusinessPartnerUseCase.ExecuteAsync(
                 id,
                 phoneNumberId);
 
         if (!removed)
+        {
+            _logger.LogWarning(
+                "Telefone {PhoneNumberId} não encontrado no Business Partner {BusinessPartnerId} para remoção.",
+                phoneNumberId,
+                id);
+
             return NotFound();
+        }
+
+        _logger.LogInformation(
+            "Telefone {PhoneNumberId} removido com sucesso do Business Partner {BusinessPartnerId}.",
+            phoneNumberId,
+            id);
 
         return NoContent();
     }

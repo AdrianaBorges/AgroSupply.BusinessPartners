@@ -42,8 +42,8 @@ public class BusinessRelationshipRepository
     }
 
     public async Task<bool> ExistsActiveAsync(
-    Guid supplierBusinessPartnerId,
-    Guid buyerBusinessPartnerId)
+        Guid supplierBusinessPartnerId,
+        Guid buyerBusinessPartnerId)
     {
         return await _context.BusinessRelationships
             .AnyAsync(x =>
