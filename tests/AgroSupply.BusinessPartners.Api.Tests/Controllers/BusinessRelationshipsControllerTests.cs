@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Mvc.Testing;
 namespace AgroSupply.BusinessPartners.Api.Tests.Controllers;
 
 public class BusinessRelationshipsControllerTests
-    : IClassFixture<WebApplicationFactory<Program>>
+    : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client;
 
     public BusinessRelationshipsControllerTests(
-        WebApplicationFactory<Program> factory)
+        CustomWebApplicationFactory factory)
     {
         _client = factory.CreateClient();
     }
