@@ -1,9 +1,11 @@
-﻿using AgroSupply.BusinessPartners.Api.Contracts.BusinessPartners;
+﻿using Microsoft.AspNetCore.Authorization;
+using AgroSupply.BusinessPartners.Api.Contracts.BusinessPartners;
 using AgroSupply.BusinessPartners.Application.UseCases.BusinessPartners;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AgroSupply.BusinessPartners.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class BusinessPartnersController : ControllerBase
