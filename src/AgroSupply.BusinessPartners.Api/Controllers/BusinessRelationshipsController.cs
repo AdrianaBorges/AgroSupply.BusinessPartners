@@ -1,10 +1,12 @@
-﻿using AgroSupply.BusinessPartners.Api.Contracts.BusinessRelationships;
+﻿using Microsoft.AspNetCore.Authorization;
+using AgroSupply.BusinessPartners.Api.Contracts.BusinessRelationships;
 using AgroSupply.BusinessPartners.Application.Abstractions;
 using AgroSupply.BusinessPartners.Application.UseCases.BusinessRelationships;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AgroSupply.BusinessPartners.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/business-relationships")]
 public class BusinessRelationshipsController : ControllerBase
